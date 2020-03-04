@@ -20,14 +20,14 @@
       `;
     }
     function TOC() {
-      let state = store.getState();
+      const state = store.getState();
       let liTags = '';
       state.contents.forEach(content => {
         liTags = liTags + `
           <li>
             <a href="${content.id}" onclick="
               event.preventDefault();
-              let action = {type: 'SELECT', id: ${content.id}};
+              const action = {type: 'SELECT', id: ${content.id}};
               store.dispatch(action);
             ">${content.title}</a>
           </li>
@@ -48,17 +48,19 @@
       `;
     }
     function article() {
+      const state = store.getState();
+      const selState = state.contents.filter(content => content.id === state.sel_id)[0];
       document.querySelector('#content').innerHTML = `
         <article>
-          <h2>HTML</h2>
-          HTML is...
+          <h2>${selState.title}</h2>
+          ${selState.desc}
         </article>
       `;
     }
     function reducer(state, action) {
       if (state === undefined) {
         return {
-          sel_id: null,
+          sel_id: 1,
           contents: [
             { id: 1, title: 'HTML', desc: 'HTML is..' },
             { id: 2, title: 'CSS', desc: 'CSS is..' }
@@ -71,10 +73,11 @@
       }
       return newState;
     }
-    let store = Redux.createStore(
+    const store = Redux.createStore(
       reducer,
       window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
     );
+    store.subscribe(article);
     subject();
     TOC();
     control();
