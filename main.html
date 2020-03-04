@@ -45,9 +45,17 @@
           <li>
             <a href="/create" onclick="
               event.preventDefault();
+              store.dispatch({
+                type: 'CHANGE_MODE',
+                mode: 'create'
+              })
             ">create</a>
           </li>
-          <li><input type="button" value="delete"></input></li>
+          <li>
+            <input type="button" value="delete" onclick="
+              store.dispatch({type: 'DELETE'});
+            "></input>
+          </li>
         </ul>
       `;
     }
@@ -82,6 +90,13 @@
           ${selState.desc}
         </article>
       `;
+      } else if (state.mode === 'welcome') {
+        document.querySelector('#content').innerHTML = `
+        <article>
+          <h2>Welcome</h2>
+          Hello, Redux!!
+        </article>
+        `;
       }
     }
     function reducer(state, action) {
@@ -97,13 +112,28 @@
       }
       let newState = {};
       if (action.type === 'SELECT') {
-        newState = Object.assign(newState, state, { sel_id: action.id });
+        newState = Object.assign(newState, state, {
+          sel_id: action.id,
+          mode: 'read'
+        });
+      } else if (action.type === 'CHANGE_MODE') {
+        newState = Object.assign(newState, state, {
+          mode: action.mode
+        });
       } else if (action.type === 'CREATE') {
         let newContents = state.contents.concat();
-        newContents.push({ id: state.contents.lenth, ...action });
+        newContents.push({ id: state.contents[state.contents.length - 1].id + 1, ...action });
         newState = Object.assign(newState, state, {
+          sel_id: newContents[newContents.length - 1].id,
           contents: newContents,
           mode: 'read'
+        });
+      } else if (action.type === 'DELETE') {
+        const newContents = state.contents.filter(content => content.id !== state.sel_id);
+        if (state.mode === 'create') { return; }
+        newState = Object.assign(newState, state, {
+          contents: newContents,
+          mode: 'welcome'
         });
       }
       return newState;
