@@ -25,7 +25,11 @@
       state.contents.forEach(content => {
         liTags = liTags + `
           <li>
-            <a href="${content.id}">${content.title}</a>
+            <a href="${content.id}" onclick="
+              event.preventDefault();
+              let action = {type: 'SELECT', id: ${content.id}};
+              store.dispatch(action);
+            ">${content.title}</a>
           </li>
         `;
       });
@@ -54,14 +58,23 @@
     function reducer(state, action) {
       if (state === undefined) {
         return {
+          sel_id: null,
           contents: [
             { id: 1, title: 'HTML', desc: 'HTML is..' },
             { id: 2, title: 'CSS', desc: 'CSS is..' }
           ]
         }
       }
+      let newState = {};
+      if (action.type === 'SELECT') {
+        newState = Object.assign(newState, state, { sel_id: action.id });
+      }
+      return newState;
     }
-    let store = Redux.createStore(reducer);
+    let store = Redux.createStore(
+      reducer,
+      window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+    );
     subject();
     TOC();
     control();
