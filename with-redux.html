@@ -28,8 +28,12 @@
       return newState;
     }
 
-    let store = Redux.createStore(reducer);
-    
+    let store = Redux.createStore(
+      reducer,
+      window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+      // store의 전달한 값들을 time travel debugging 가능 
+      );
+
     function red() {
       let state = store.getState();
       document.querySelector('#red').innerHTML = `
