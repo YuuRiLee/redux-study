@@ -42,25 +42,53 @@
     function control() {
       document.querySelector('#control').innerHTML = `
         <ul>
-          <li><a href="/create">create</a></li>
+          <li>
+            <a href="/create" onclick="
+              event.preventDefault();
+            ">create</a>
+          </li>
           <li><input type="button" value="delete"></input></li>
         </ul>
       `;
     }
     function article() {
       const state = store.getState();
-      const selState = state.contents.filter(content => content.id === state.sel_id)[0];
-      document.querySelector('#content').innerHTML = `
+      if (state.mode === 'create') {
+        document.querySelector('#content').innerHTML = `
+          <article>
+            <form onsubmit="
+                event.preventDefault();
+                const title = this.title.value;
+                const desc = this.desc.value;
+                store.dispatch({type: 'CREATE', title: title, desc:desc});
+              ">
+              <p>
+                <input type="text" name="title" placeholder="title">
+              </p>
+              <p>
+                <textarea name="desc" placeholder="description"></textarea>
+              </p>
+              <p>
+                <input type="submit">
+              </p>
+            </form>
+          </article>
+        `;
+      } else if (state.mode === 'read') {
+        const selState = state.contents.filter(content => content.id === state.sel_id)[0];
+        document.querySelector('#content').innerHTML = `
         <article>
           <h2>${selState.title}</h2>
           ${selState.desc}
         </article>
       `;
+      }
     }
     function reducer(state, action) {
       if (state === undefined) {
         return {
           sel_id: 1,
+          mode: 'create',
           contents: [
             { id: 1, title: 'HTML', desc: 'HTML is..' },
             { id: 2, title: 'CSS', desc: 'CSS is..' }
@@ -70,6 +98,13 @@
       let newState = {};
       if (action.type === 'SELECT') {
         newState = Object.assign(newState, state, { sel_id: action.id });
+      } else if (action.type === 'CREATE') {
+        let newContents = state.contents.concat();
+        newContents.push({ id: state.contents.lenth, ...action });
+        newState = Object.assign(newState, state, {
+          contents: newContents,
+          mode: 'read'
+        });
       }
       return newState;
     }
@@ -78,6 +113,7 @@
       window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
     );
     store.subscribe(article);
+    store.subscribe(TOC);
     subject();
     TOC();
     control();
